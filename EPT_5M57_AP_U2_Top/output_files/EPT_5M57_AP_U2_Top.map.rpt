@@ -1,0 +1,566 @@
+Analysis & Synthesis report for EPT_5M57_AP_U2_Top
+Thu Jun 18 22:30:02 2015
+Quartus II 64-Bit Version 13.1.0 Build 162 10/23/2013 SJ Web Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Analysis & Synthesis Summary
+  3. Analysis & Synthesis Settings
+  4. Parallel Compilation
+  5. Analysis & Synthesis Source Files Read
+  6. Analysis & Synthesis Resource Usage Summary
+  7. Analysis & Synthesis Resource Utilization by Entity
+  8. State Machine - |EPT_5M57_AP_U2_Top|adc_cnvst_reg
+  9. User-Specified and Inferred Latches
+ 10. Logic Cells Representing Combinational Loops
+ 11. Registers Removed During Synthesis
+ 12. General Register Statistics
+ 13. Inverted Register Statistics
+ 14. Multiplexer Restructuring Statistics (Restructuring Performed)
+ 15. Parameter Settings for User Entity Instance: Top-level Entity: |EPT_5M57_AP_U2_Top
+ 16. Parameter Settings for User Entity Instance: spi_interface:SPI_IFACE_INST
+ 17. Parameter Settings for User Entity Instance: spi_interface:SPI_IFACE_INST|write_SPI:write_spi_inst
+ 18. Parameter Settings for User Entity Instance: spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst
+ 19. Parameter Settings for User Entity Instance: eptWireOR:wireOR
+ 20. Port Connectivity Checks: "spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst"
+ 21. Port Connectivity Checks: "spi_interface:SPI_IFACE_INST"
+ 22. Analysis & Synthesis Messages
+ 23. Analysis & Synthesis Suppressed Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 1991-2013 Altera Corporation
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, Altera MegaCore Function License 
+Agreement, or other applicable license agreement, including, 
+without limitation, that your use is for the sole purpose of 
+programming logic devices manufactured by Altera and sold by 
+Altera or its authorized distributors.  Please refer to the 
+applicable agreement for further details.
+
+
+
++--------------------------------------------------------------------------+
+; Analysis & Synthesis Summary                                             ;
++-----------------------------+--------------------------------------------+
+; Analysis & Synthesis Status ; Successful - Thu Jun 18 22:30:02 2015      ;
+; Quartus II 64-Bit Version   ; 13.1.0 Build 162 10/23/2013 SJ Web Edition ;
+; Revision Name               ; EPT_5M57_AP_U2_Top                         ;
+; Top-level Entity Name       ; EPT_5M57_AP_U2_Top                         ;
+; Family                      ; MAX V                                      ;
+; Total logic elements        ; 615                                        ;
+; Total pins                  ; 57                                         ;
+; Total virtual pins          ; 0                                          ;
+; UFM blocks                  ; 0 / 1 ( 0 % )                              ;
++-----------------------------+--------------------------------------------+
+
+
++----------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Settings                                                                                        ;
++----------------------------------------------------------------------------+--------------------+--------------------+
+; Option                                                                     ; Setting            ; Default Value      ;
++----------------------------------------------------------------------------+--------------------+--------------------+
+; Device                                                                     ; 5M570ZT100C5       ;                    ;
+; Top-level entity name                                                      ; EPT_5M57_AP_U2_Top ; EPT_5M57_AP_U2_Top ;
+; Family name                                                                ; MAX V              ; Cyclone IV GX      ;
+; Use smart compilation                                                      ; Off                ; Off                ;
+; Enable parallel Assembler and TimeQuest Timing Analyzer during compilation ; On                 ; On                 ;
+; Enable compact report table                                                ; Off                ; Off                ;
+; Restructure Multiplexers                                                   ; Auto               ; Auto               ;
+; Create Debugging Nodes for IP Cores                                        ; Off                ; Off                ;
+; Preserve fewer node names                                                  ; On                 ; On                 ;
+; Disable OpenCore Plus hardware evaluation                                  ; Off                ; Off                ;
+; Verilog Version                                                            ; Verilog_2001       ; Verilog_2001       ;
+; VHDL Version                                                               ; VHDL_1993          ; VHDL_1993          ;
+; State Machine Processing                                                   ; Auto               ; Auto               ;
+; Safe State Machine                                                         ; Off                ; Off                ;
+; Extract Verilog State Machines                                             ; On                 ; On                 ;
+; Extract VHDL State Machines                                                ; On                 ; On                 ;
+; Ignore Verilog initial constructs                                          ; Off                ; Off                ;
+; Iteration limit for constant Verilog loops                                 ; 5000               ; 5000               ;
+; Iteration limit for non-constant Verilog loops                             ; 250                ; 250                ;
+; Add Pass-Through Logic to Inferred RAMs                                    ; On                 ; On                 ;
+; Infer RAMs from Raw Logic                                                  ; On                 ; On                 ;
+; Parallel Synthesis                                                         ; On                 ; On                 ;
+; NOT Gate Push-Back                                                         ; On                 ; On                 ;
+; Power-Up Don't Care                                                        ; On                 ; On                 ;
+; Remove Redundant Logic Cells                                               ; Off                ; Off                ;
+; Remove Duplicate Registers                                                 ; On                 ; On                 ;
+; Ignore CARRY Buffers                                                       ; Off                ; Off                ;
+; Ignore CASCADE Buffers                                                     ; Off                ; Off                ;
+; Ignore GLOBAL Buffers                                                      ; Off                ; Off                ;
+; Ignore ROW GLOBAL Buffers                                                  ; Off                ; Off                ;
+; Ignore LCELL Buffers                                                       ; Off                ; Off                ;
+; Ignore SOFT Buffers                                                        ; On                 ; On                 ;
+; Limit AHDL Integers to 32 Bits                                             ; Off                ; Off                ;
+; Optimization Technique                                                     ; Balanced           ; Balanced           ;
+; Carry Chain Length                                                         ; 70                 ; 70                 ;
+; Auto Carry Chains                                                          ; On                 ; On                 ;
+; Auto Open-Drain Pins                                                       ; On                 ; On                 ;
+; Perform WYSIWYG Primitive Resynthesis                                      ; Off                ; Off                ;
+; Auto Shift Register Replacement                                            ; Auto               ; Auto               ;
+; Allow Shift Register Merging across Hierarchies                            ; Auto               ; Auto               ;
+; Auto Clock Enable Replacement                                              ; On                 ; On                 ;
+; Allow Synchronous Control Signals                                          ; On                 ; On                 ;
+; Force Use of Synchronous Clear Signals                                     ; Off                ; Off                ;
+; Auto Resource Sharing                                                      ; Off                ; Off                ;
+; Use LogicLock Constraints during Resource Balancing                        ; On                 ; On                 ;
+; Ignore translate_off and synthesis_off directives                          ; Off                ; Off                ;
+; Report Parameter Settings                                                  ; On                 ; On                 ;
+; Report Source Assignments                                                  ; On                 ; On                 ;
+; Report Connectivity Checks                                                 ; On                 ; On                 ;
+; Ignore Maximum Fan-Out Assignments                                         ; Off                ; Off                ;
+; Synchronization Register Chain Length                                      ; 2                  ; 2                  ;
+; PowerPlay Power Optimization                                               ; Normal compilation ; Normal compilation ;
+; HDL message level                                                          ; Level2             ; Level2             ;
+; Suppress Register Optimization Related Messages                            ; Off                ; Off                ;
+; Number of Removed Registers Reported in Synthesis Report                   ; 5000               ; 5000               ;
+; Number of Swept Nodes Reported in Synthesis Report                         ; 5000               ; 5000               ;
+; Number of Inverted Registers Reported in Synthesis Report                  ; 100                ; 100                ;
+; Clock MUX Protection                                                       ; On                 ; On                 ;
+; Block Design Naming                                                        ; Auto               ; Auto               ;
+; Synthesis Effort                                                           ; Auto               ; Auto               ;
+; Shift Register Replacement - Allow Asynchronous Clear Signal               ; On                 ; On                 ;
+; Pre-Mapping Resynthesis Optimization                                       ; Off                ; Off                ;
+; Analysis & Synthesis Message Level                                         ; Medium             ; Medium             ;
+; Disable Register Merging Across Hierarchies                                ; Auto               ; Auto               ;
+; Synthesis Seed                                                             ; 1                  ; 1                  ;
++----------------------------------------------------------------------------+--------------------+--------------------+
+
+
++------------------------------------------+
+; Parallel Compilation                     ;
++----------------------------+-------------+
+; Processors                 ; Number      ;
++----------------------------+-------------+
+; Number detected on machine ; 4           ;
+; Maximum allowed            ; 2           ;
+;                            ;             ;
+; Average used               ; 1.00        ;
+; Maximum used               ; 1           ;
+;                            ;             ;
+; Usage by Processor         ; % Time Used ;
+;     Processor 1            ; 100.0%      ;
+;     Processors 2-4         ;   0.0%      ;
++----------------------------+-------------+
+
+
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Source Files Read                                                                                                                                                                         ;
++------------------------------------+-----------------+------------------------------------+----------------------------------------------------------------------------------------------------------+---------+
+; File Name with User-Entered Path   ; Used in Netlist ; File Type                          ; File Name with Absolute Path                                                                             ; Library ;
++------------------------------------+-----------------+------------------------------------+----------------------------------------------------------------------------------------------------------+---------+
+; ../src/active_transfer_library.vqm ; yes             ; User Verilog Quartus Mapping File  ; C:/Jolly/Code_FPGA/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_UnoProLyzer/src/active_transfer_library.vqm ;         ;
+; ../src/spi_interface.v             ; yes             ; User Verilog HDL File              ; C:/Jolly/Code_FPGA/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_UnoProLyzer/src/spi_interface.v             ;         ;
+; ../src/active_trigger.vqm          ; yes             ; User Verilog Quartus Mapping File  ; C:/Jolly/Code_FPGA/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_UnoProLyzer/src/active_trigger.vqm          ;         ;
+; ../src/active_transfer.vqm         ; yes             ; User Verilog Quartus Mapping File  ; C:/Jolly/Code_FPGA/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_UnoProLyzer/src/active_transfer.vqm         ;         ;
+; ../src/write_SPI.v                 ; yes             ; User Verilog HDL File              ; C:/Jolly/Code_FPGA/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_UnoProLyzer/src/write_SPI.v                 ;         ;
+; ../src/read_SPI.v                  ; yes             ; User Verilog HDL File              ; C:/Jolly/Code_FPGA/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_UnoProLyzer/src/read_SPI.v                  ;         ;
+; ../src/eptWireOR.v                 ; yes             ; User Verilog HDL File              ; C:/Jolly/Code_FPGA/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_UnoProLyzer/src/eptWireOR.v                 ;         ;
+; ../src/EPT_5M57_AP_U2_Top.v        ; yes             ; User Verilog HDL File              ; C:/Jolly/Code_FPGA/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_UnoProLyzer/src/EPT_5M57_AP_U2_Top.v        ;         ;
++------------------------------------+-----------------+------------------------------------+----------------------------------------------------------------------------------------------------------+---------+
+
+
++-----------------------------------------------------+
+; Analysis & Synthesis Resource Usage Summary         ;
++---------------------------------------------+-------+
+; Resource                                    ; Usage ;
++---------------------------------------------+-------+
+; Total logic elements                        ; 615   ;
+;     -- Combinational with no register       ; 267   ;
+;     -- Register only                        ; 103   ;
+;     -- Combinational with a register        ; 245   ;
+;                                             ;       ;
+; Logic element usage by number of LUT inputs ;       ;
+;     -- 4 input functions                    ; 178   ;
+;     -- 3 input functions                    ; 131   ;
+;     -- 2 input functions                    ; 185   ;
+;     -- 1 input functions                    ; 14    ;
+;     -- 0 input functions                    ; 1     ;
+;                                             ;       ;
+; Logic elements by mode                      ;       ;
+;     -- normal mode                          ; 528   ;
+;     -- arithmetic mode                      ; 87    ;
+;     -- qfbk mode                            ; 21    ;
+;     -- register cascade mode                ; 0     ;
+;     -- synchronous clear/load mode          ; 78    ;
+;     -- asynchronous clear/load mode         ; 321   ;
+;                                             ;       ;
+; Total registers                             ; 348   ;
+; Total logic cells in carry chains           ; 97    ;
+; I/O pins                                    ; 57    ;
+; Maximum fan-out node                        ; aa[0] ;
+; Maximum fan-out                             ; 332   ;
+; Total fan-out                               ; 2511  ;
+; Average fan-out                             ; 3.74  ;
++---------------------------------------------+-------+
+
+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Resource Utilization by Entity                                                                                                                                                                                                                                                                                                     ;
++-----------------------------------------------------------+-------------+--------------+------------+------+--------------+--------------+-------------------+------------------+-----------------+------------+-------------------------------------------------------------------------------------------------------------------------+--------------+
+; Compilation Hierarchy Node                                ; Logic Cells ; LC Registers ; UFM Blocks ; Pins ; Virtual Pins ; LUT-Only LCs ; Register-Only LCs ; LUT/Register LCs ; Carry Chain LCs ; Packed LCs ; Full Hierarchy Name                                                                                                     ; Library Name ;
++-----------------------------------------------------------+-------------+--------------+------------+------+--------------+--------------+-------------------+------------------+-----------------+------------+-------------------------------------------------------------------------------------------------------------------------+--------------+
+; |EPT_5M57_AP_U2_Top                                       ; 615 (181)   ; 348          ; 0          ; 57   ; 0            ; 267 (69)     ; 102 (54)          ; 246 (58)         ; 97 (47)         ; 20 (0)     ; |EPT_5M57_AP_U2_Top                                                                                                     ; work         ;
+;    |active_transfer:ACTIVE_TRANSFER_INST_1|               ; 34 (34)     ; 21           ; 0          ; 0    ; 0            ; 13 (13)      ; 10 (10)           ; 11 (11)          ; 0 (0)           ; 1 (1)      ; |EPT_5M57_AP_U2_Top|active_transfer:ACTIVE_TRANSFER_INST_1                                                              ; work         ;
+;    |active_transfer:ACTIVE_TRANSFER_INST_2|               ; 26 (26)     ; 13           ; 0          ; 0    ; 0            ; 13 (13)      ; 2 (2)             ; 11 (11)          ; 0 (0)           ; 1 (1)      ; |EPT_5M57_AP_U2_Top|active_transfer:ACTIVE_TRANSFER_INST_2                                                              ; work         ;
+;    |active_transfer:ACTIVE_TRANSFER_INST_4|               ; 26 (26)     ; 13           ; 0          ; 0    ; 0            ; 13 (13)      ; 2 (2)             ; 11 (11)          ; 0 (0)           ; 1 (1)      ; |EPT_5M57_AP_U2_Top|active_transfer:ACTIVE_TRANSFER_INST_4                                                              ; work         ;
+;    |active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST| ; 211 (0)     ; 110          ; 0          ; 8    ; 0            ; 101 (0)      ; 19 (0)            ; 91 (0)           ; 40 (0)          ; 17 (0)     ; |EPT_5M57_AP_U2_Top|active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST                                                ; work         ;
+;       |endpoint_registers:ENDPOINT_REGISTERS_INST|        ; 163 (163)   ; 88           ; 0          ; 0    ; 0            ; 75 (75)      ; 19 (19)           ; 69 (69)          ; 32 (32)         ; 17 (17)    ; |EPT_5M57_AP_U2_Top|active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|endpoint_registers:ENDPOINT_REGISTERS_INST     ;              ;
+;       |ft_245_state_machine:FT_245_STATE_MACHINE_INST|    ; 48 (48)     ; 22           ; 0          ; 0    ; 0            ; 26 (26)      ; 0 (0)             ; 22 (22)          ; 8 (8)           ; 0 (0)      ; |EPT_5M57_AP_U2_Top|active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|ft_245_state_machine:FT_245_STATE_MACHINE_INST ;              ;
+;    |active_trigger:ACTIVE_TRIGGER_INST|                   ; 42 (42)     ; 15           ; 0          ; 0    ; 0            ; 27 (27)      ; 8 (8)             ; 7 (7)            ; 0 (0)           ; 0 (0)      ; |EPT_5M57_AP_U2_Top|active_trigger:ACTIVE_TRIGGER_INST                                                                  ; work         ;
+;    |eptWireOR:wireOR|                                     ; 9 (9)       ; 0            ; 0          ; 0    ; 0            ; 9 (9)        ; 0 (0)             ; 0 (0)            ; 0 (0)           ; 0 (0)      ; |EPT_5M57_AP_U2_Top|eptWireOR:wireOR                                                                                    ; work         ;
+;    |spi_interface:SPI_IFACE_INST|                         ; 86 (34)     ; 64           ; 0          ; 0    ; 0            ; 22 (11)      ; 7 (2)             ; 57 (21)          ; 10 (5)          ; 0 (0)      ; |EPT_5M57_AP_U2_Top|spi_interface:SPI_IFACE_INST                                                                        ; work         ;
+;       |read_SPI:read_spi_inst|                            ; 22 (22)     ; 20           ; 0          ; 0    ; 0            ; 2 (2)        ; 3 (3)             ; 17 (17)          ; 0 (0)           ; 0 (0)      ; |EPT_5M57_AP_U2_Top|spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst                                                 ; work         ;
+;       |write_SPI:write_spi_inst|                          ; 30 (30)     ; 21           ; 0          ; 0    ; 0            ; 9 (9)        ; 2 (2)             ; 19 (19)          ; 5 (5)           ; 0 (0)      ; |EPT_5M57_AP_U2_Top|spi_interface:SPI_IFACE_INST|write_SPI:write_spi_inst                                               ; work         ;
++-----------------------------------------------------------+-------------+--------------+------------+------+--------------+--------------+-------------------+------------------+-----------------+------------+-------------------------------------------------------------------------------------------------------------------------+--------------+
+Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
+
+
+Encoding Type:  One-Hot
++----------------------------------------------------------------------------------------------+
+; State Machine - |EPT_5M57_AP_U2_Top|adc_cnvst_reg                                            ;
++------------------+------------------+------------------+------------------+------------------+
+; Name             ; adc_cnvst_reg.11 ; adc_cnvst_reg.10 ; adc_cnvst_reg.01 ; adc_cnvst_reg.00 ;
++------------------+------------------+------------------+------------------+------------------+
+; adc_cnvst_reg.00 ; 0                ; 0                ; 0                ; 0                ;
+; adc_cnvst_reg.01 ; 0                ; 0                ; 1                ; 1                ;
+; adc_cnvst_reg.10 ; 0                ; 1                ; 0                ; 1                ;
+; adc_cnvst_reg.11 ; 1                ; 0                ; 0                ; 1                ;
++------------------+------------------+------------------+------------------+------------------+
+
+
++----------------------------------------------------------------------------------------------------------------------------------------+
+; User-Specified and Inferred Latches                                                                                                    ;
++----------------------------------------------------+----------------------------------------------------------+------------------------+
+; Latch Name                                         ; Latch Enable Signal                                      ; Free of Timing Hazards ;
++----------------------------------------------------+----------------------------------------------------------+------------------------+
+; spi_interface:SPI_IFACE_INST|DOUT[0]               ; spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|DONE ; yes                    ;
+; spi_interface:SPI_IFACE_INST|DOUT[1]               ; spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|DONE ; yes                    ;
+; spi_interface:SPI_IFACE_INST|DOUT[2]               ; spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|DONE ; yes                    ;
+; spi_interface:SPI_IFACE_INST|DOUT[3]               ; spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|DONE ; yes                    ;
+; spi_interface:SPI_IFACE_INST|DOUT[4]               ; spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|DONE ; yes                    ;
+; spi_interface:SPI_IFACE_INST|DOUT[5]               ; spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|DONE ; yes                    ;
+; spi_interface:SPI_IFACE_INST|DOUT[6]               ; spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|DONE ; yes                    ;
+; spi_interface:SPI_IFACE_INST|DOUT[7]               ; spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|DONE ; yes                    ;
+; Number of user-specified and inferred latches = 8  ;                                                          ;                        ;
++----------------------------------------------------+----------------------------------------------------------+------------------------+
+Note: All latches listed above may not be present at the end of synthesis due to various synthesis optimizations.
+
+
++---------------------------------------------------------------------------------------------------------------------------------+
+; Logic Cells Representing Combinational Loops                                                                                    ;
++----------------------------------------------------------------------------------------------------------------------------+----+
+; Logic Cell Name                                                                                                            ;    ;
++----------------------------------------------------------------------------------------------------------------------------+----+
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|ft_245_state_machine:FT_245_STATE_MACHINE_INST|USB_RD_N               ;    ;
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|endpoint_registers:ENDPOINT_REGISTERS_INST|transfer_busy              ;    ;
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|ft_245_state_machine:FT_245_STATE_MACHINE_INST|USB_REGISTER_DECODE[0] ;    ;
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|ft_245_state_machine:FT_245_STATE_MACHINE_INST|DATA_BYTE_READY        ;    ;
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|ft_245_state_machine:FT_245_STATE_MACHINE_INST|USB_REGISTER_DECODE[7] ;    ;
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|ft_245_state_machine:FT_245_STATE_MACHINE_INST|USB_REGISTER_DECODE[1] ;    ;
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|ft_245_state_machine:FT_245_STATE_MACHINE_INST|USB_REGISTER_DECODE[5] ;    ;
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|ft_245_state_machine:FT_245_STATE_MACHINE_INST|USB_REGISTER_DECODE[2] ;    ;
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|ft_245_state_machine:FT_245_STATE_MACHINE_INST|USB_REGISTER_DECODE[3] ;    ;
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|ft_245_state_machine:FT_245_STATE_MACHINE_INST|USB_REGISTER_DECODE[6] ;    ;
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|ft_245_state_machine:FT_245_STATE_MACHINE_INST|USB_REGISTER_DECODE[4] ;    ;
+; Number of logic cells representing combinational loops                                                                     ; 11 ;
++----------------------------------------------------------------------------------------------------------------------------+----+
+Note: All cells listed above may not be present at the end of synthesis due to various synthesis optimizations.
+
+
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Registers Removed During Synthesis                                                                                                                                ;
++--------------------------------------------------------------------------------------------------------------------------+----------------------------------------+
+; Register name                                                                                                            ; Reason for Removal                     ;
++--------------------------------------------------------------------------------------------------------------------------+----------------------------------------+
+; active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST|endpoint_registers:ENDPOINT_REGISTERS_INST|length_from_device[0..7] ; Stuck at GND due to stuck port reg_out ;
+; spi_interface:SPI_IFACE_INST|state[5]                                                                                    ; Stuck at GND due to stuck port data_in ;
+; spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|state[7,8]                                                           ; Stuck at GND due to stuck port data_in ;
+; spi_interface:SPI_IFACE_INST|write_SPI:write_spi_inst|state[5..7]                                                        ; Stuck at GND due to stuck port data_in ;
+; adc_cnvst_reg~6                                                                                                          ; Lost fanout                            ;
+; adc_cnvst_reg~7                                                                                                          ; Lost fanout                            ;
+; Total Number of Removed Registers = 16                                                                                   ;                                        ;
++--------------------------------------------------------------------------------------------------------------------------+----------------------------------------+
+
+
++------------------------------------------------------+
+; General Register Statistics                          ;
++----------------------------------------------+-------+
+; Statistic                                    ; Value ;
++----------------------------------------------+-------+
+; Total registers                              ; 348   ;
+; Number of registers using Synchronous Clear  ; 28    ;
+; Number of registers using Synchronous Load   ; 17    ;
+; Number of registers using Asynchronous Clear ; 321   ;
+; Number of registers using Asynchronous Load  ; 0     ;
+; Number of registers using Clock Enable       ; 158   ;
+; Number of registers using Preset             ; 0     ;
++----------------------------------------------+-------+
+
+
++--------------------------------------------------------------------------+
+; Inverted Register Statistics                                             ;
++----------------------------------------------------------------+---------+
+; Inverted Register                                              ; Fan out ;
++----------------------------------------------------------------+---------+
+; spi_interface:SPI_IFACE_INST|SPI_CS_N                          ; 3       ;
+; spi_interface:SPI_IFACE_INST|write_SPI:write_spi_inst|state[0] ; 7       ;
+; spi_interface:SPI_IFACE_INST|state[0]                          ; 5       ;
+; state[0]                                                       ; 3       ;
+; spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|state[0]   ; 11      ;
+; adc_convst_delay_value[11]                                     ; 1       ;
+; adc_convst_delay_value[10]                                     ; 1       ;
+; adc_convst_delay_value[7]                                      ; 1       ;
+; adc_convst_delay_value[6]                                      ; 1       ;
+; adc_convst_delay_value[5]                                      ; 1       ;
+; adc_convst_delay_value[2]                                      ; 1       ;
+; Total number of inverted registers = 11                        ;         ;
++----------------------------------------------------------------+---------+
+
+
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                                                       ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------------------------+
+; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                                             ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------------------------+
+; 3:1                ; 5 bits    ; 10 LEs        ; 5 LEs                ; 5 LEs                  ; Yes        ; |EPT_5M57_AP_U2_Top|spi_interface:SPI_IFACE_INST|write_SPI:write_spi_inst|bit_count[3] ;
+; 3:1                ; 3 bits    ; 6 LEs         ; 3 LEs                ; 3 LEs                  ; Yes        ; |EPT_5M57_AP_U2_Top|spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|bit_count[2]   ;
+; 3:1                ; 8 bits    ; 16 LEs        ; 8 LEs                ; 8 LEs                  ; Yes        ; |EPT_5M57_AP_U2_Top|spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst|DOUT[0]        ;
+; 4:1                ; 3 bits    ; 6 LEs         ; 3 LEs                ; 3 LEs                  ; Yes        ; |EPT_5M57_AP_U2_Top|adc_channel_select[0]                                              ;
+; 5:1                ; 7 bits    ; 21 LEs        ; 14 LEs               ; 7 LEs                  ; Yes        ; |EPT_5M57_AP_U2_Top|spi_interface:SPI_IFACE_INST|write_SPI:write_spi_inst|shift_reg[2] ;
+; 3:1                ; 22 bits   ; 44 LEs        ; 44 LEs               ; 0 LEs                  ; No         ; |EPT_5M57_AP_U2_Top|adc_convst_cmd_count                                               ;
+; 5:1                ; 3 bits    ; 9 LEs         ; 9 LEs                ; 0 LEs                  ; No         ; |EPT_5M57_AP_U2_Top|adc_cnvst_reg                                                      ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------------------------+
+
+
++------------------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: Top-level Entity: |EPT_5M57_AP_U2_Top ;
++-----------------------+-------+----------------------------------------------------+
+; Parameter Name        ; Value ; Type                                               ;
++-----------------------+-------+----------------------------------------------------+
+; IDLE                  ; 0     ; Signed Integer                                     ;
+; ADC_CONVST            ; 1     ; Signed Integer                                     ;
+; WAIT_FOR_EOC          ; 2     ; Signed Integer                                     ;
+; START_DATA_RECEIVE    ; 3     ; Signed Integer                                     ;
+; WE_OUT_RCVD           ; 4     ; Signed Integer                                     ;
+; DATA_RECEIVE_COMPLETE ; 5     ; Signed Integer                                     ;
+; TRANSFER_TO_HOST      ; 6     ; Signed Integer                                     ;
+; TRANSFER_COMPLETE     ; 7     ; Signed Integer                                     ;
++-----------------------+-------+----------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++---------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: spi_interface:SPI_IFACE_INST ;
++------------------------+----------+---------------------------------------+
+; Parameter Name         ; Value    ; Type                                  ;
++------------------------+----------+---------------------------------------+
+; IDLE                   ; 0        ; Signed Integer                        ;
+; WAIT_FOR_START         ; 1        ; Signed Integer                        ;
+; CHECK_FOR_DATA         ; 2        ; Signed Integer                        ;
+; START_WRITE_BYTE       ; 3        ; Signed Integer                        ;
+; WRITE_BYTE             ; 4        ; Signed Integer                        ;
+; DELAY_CHECK_BYTE_COUNT ; 5        ; Signed Integer                        ;
+; CHECK_BYTE_COUNT       ; 6        ; Signed Integer                        ;
+; START_READ_BYTE        ; 7        ; Signed Integer                        ;
+; READ_BYTE              ; 8        ; Signed Integer                        ;
+; CHECK_RD_BYTE          ; 9        ; Signed Integer                        ;
+; READ_COMPLETE          ; 10       ; Signed Integer                        ;
+; CLK_COUNT_4_4MHZ       ; 5        ; Signed Integer                        ;
+; CLK_COUNT_10_2MHZ      ; 3        ; Signed Integer                        ;
+; READ_SPI_DELAY_COUNT   ; 00010000 ; Unsigned Binary                       ;
++------------------------+----------+---------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++----------------------------------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: spi_interface:SPI_IFACE_INST|write_SPI:write_spi_inst ;
++----------------------+-------+---------------------------------------------------------------------+
+; Parameter Name       ; Value ; Type                                                                ;
++----------------------+-------+---------------------------------------------------------------------+
+; IDLE                 ; 0     ; Signed Integer                                                      ;
+; LOAD_FIRST_BIT       ; 1     ; Signed Integer                                                      ;
+; CLOCK_HI             ; 2     ; Signed Integer                                                      ;
+; CLOCK_LOW            ; 3     ; Signed Integer                                                      ;
+; WRITE_DONE           ; 4     ; Signed Integer                                                      ;
+; CLOCK_HI_DELAY       ; 5     ; Signed Integer                                                      ;
+; CLOCK_LO_DELAY       ; 6     ; Signed Integer                                                      ;
+; LOAD_FIRST_BIT_DELAY ; 7     ; Signed Integer                                                      ;
++----------------------+-------+---------------------------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++--------------------------------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst ;
++---------------------+-------+--------------------------------------------------------------------+
+; Parameter Name      ; Value ; Type                                                               ;
++---------------------+-------+--------------------------------------------------------------------+
+; IDLE                ; 0     ; Signed Integer                                                     ;
+; FIRST_HI            ; 1     ; Signed Integer                                                     ;
+; FIRST_LOW           ; 2     ; Signed Integer                                                     ;
+; CLOCK_HI            ; 3     ; Signed Integer                                                     ;
+; CLOCK_LOW           ; 4     ; Signed Integer                                                     ;
+; READ_DONE           ; 5     ; Signed Integer                                                     ;
+; WAIT_FOR_DATA_IN_LO ; 6     ; Signed Integer                                                     ;
+; CLOCK_HI_DELAY      ; 7     ; Signed Integer                                                     ;
+; CLOCK_LO_DELAY      ; 8     ; Signed Integer                                                     ;
+; READ_DONE_DELAY     ; 9     ; Signed Integer                                                     ;
++---------------------+-------+--------------------------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++---------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: eptWireOR:wireOR ;
++----------------+-------+--------------------------------------+
+; Parameter Name ; Value ; Type                                 ;
++----------------+-------+--------------------------------------+
+; N              ; 4     ; Signed Integer                       ;
++----------------+-------+--------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++------------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst"                                        ;
++--------------+--------+----------+-------------------------------------------------------------------------------------+
+; Port         ; Type   ; Severity ; Details                                                                             ;
++--------------+--------+----------+-------------------------------------------------------------------------------------+
+; PERFORM_READ ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
++--------------+--------+----------+-------------------------------------------------------------------------------------+
+
+
++------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "spi_interface:SPI_IFACE_INST"                                                         ;
++--------+--------+----------+-------------------------------------------------------------------------------------+
+; Port   ; Type   ; Severity ; Details                                                                             ;
++--------+--------+----------+-------------------------------------------------------------------------------------+
+; RDY_IN ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
++--------+--------+----------+-------------------------------------------------------------------------------------+
+
+
++-------------------------------+
+; Analysis & Synthesis Messages ;
++-------------------------------+
+Info: *******************************************************************
+Info: Running Quartus II 64-Bit Analysis & Synthesis
+    Info: Version 13.1.0 Build 162 10/23/2013 SJ Web Edition
+    Info: Processing started: Thu Jun 18 22:29:59 2015
+Info: Command: quartus_map --read_settings_files=on --write_settings_files=off EPT_5M57_AP_U2_Top -c EPT_5M57_AP_U2_Top
+Info (11104): Parallel Compilation has detected 4 hyper-threaded processors. However, the extra hyper-threaded processors will not be used by default. Parallel Compilation will use 2 of the 2 physical processors detected instead.
+Info (12021): Found 1 design units, including 1 entities, in source file /jolly/code_fpga/ept_5m57_ap_u2_unoprolyzer/ept_5m57_ap_u2_unoprolyzer/src/active_transfer_library.vqm
+    Info (12023): Found entity 1: active_transfer_library
+Info (12021): Found 1 design units, including 1 entities, in source file /jolly/code_fpga/ept_5m57_ap_u2_unoprolyzer/ept_5m57_ap_u2_unoprolyzer/src/spi_interface.v
+    Info (12023): Found entity 1: spi_interface
+Info (12021): Found 1 design units, including 1 entities, in source file /jolly/code_fpga/ept_5m57_ap_u2_unoprolyzer/ept_5m57_ap_u2_unoprolyzer/src/active_trigger.vqm
+    Info (12023): Found entity 1: active_trigger
+Info (12021): Found 1 design units, including 1 entities, in source file /jolly/code_fpga/ept_5m57_ap_u2_unoprolyzer/ept_5m57_ap_u2_unoprolyzer/src/active_transfer.vqm
+    Info (12023): Found entity 1: active_transfer
+Info (12021): Found 1 design units, including 1 entities, in source file /jolly/code_fpga/ept_5m57_ap_u2_unoprolyzer/ept_5m57_ap_u2_unoprolyzer/src/active_control_register.vqm
+    Info (12023): Found entity 1: active_control_register
+Info (12021): Found 1 design units, including 1 entities, in source file /jolly/code_fpga/ept_5m57_ap_u2_unoprolyzer/ept_5m57_ap_u2_unoprolyzer/src/active_block.vqm
+    Info (12023): Found entity 1: active_block
+Info (12021): Found 1 design units, including 1 entities, in source file /jolly/code_fpga/ept_5m57_ap_u2_unoprolyzer/ept_5m57_ap_u2_unoprolyzer/src/write_spi.v
+    Info (12023): Found entity 1: write_SPI
+Info (12021): Found 1 design units, including 1 entities, in source file /jolly/code_fpga/ept_5m57_ap_u2_unoprolyzer/ept_5m57_ap_u2_unoprolyzer/src/read_spi.v
+    Info (12023): Found entity 1: read_SPI
+Info (12021): Found 1 design units, including 1 entities, in source file /jolly/code_fpga/ept_5m57_ap_u2_unoprolyzer/ept_5m57_ap_u2_unoprolyzer/src/eptwireor.v
+    Info (12023): Found entity 1: eptWireOR
+Info (12021): Found 1 design units, including 1 entities, in source file /jolly/code_fpga/ept_5m57_ap_u2_unoprolyzer/ept_5m57_ap_u2_unoprolyzer/src/ept_5m57_ap_u2_top.v
+    Info (12023): Found entity 1: EPT_5M57_AP_U2_Top
+Info (12127): Elaborating entity "EPT_5M57_AP_U2_Top" for the top level hierarchy
+Warning (10036): Verilog HDL or VHDL warning at EPT_5M57_AP_U2_Top.v(173): object "master_spi_transmit_byte" assigned a value but never read
+Warning (10230): Verilog HDL assignment warning at EPT_5M57_AP_U2_Top.v(396): truncated value with size 8 to match size of target (6)
+Warning (10235): Verilog HDL Always Construct warning at EPT_5M57_AP_U2_Top.v(775): variable "adc_eoc_reg" is read inside the Always Construct but isn't in the Always Construct's Event Control
+Warning (10235): Verilog HDL Always Construct warning at EPT_5M57_AP_U2_Top.v(817): variable "adc_channel_select" is read inside the Always Construct but isn't in the Always Construct's Event Control
+Warning (10034): Output port "LB_SER" at EPT_5M57_AP_U2_Top.v(47) has no driver
+Warning (10034): Output port "LB_IOH" at EPT_5M57_AP_U2_Top.v(49) has no driver
+Warning (10034): Output port "LB_IOL" at EPT_5M57_AP_U2_Top.v(50) has no driver
+Info (12128): Elaborating entity "spi_interface" for hierarchy "spi_interface:SPI_IFACE_INST"
+Warning (10230): Verilog HDL assignment warning at spi_interface.v(201): truncated value with size 32 to match size of target (3)
+Warning (10230): Verilog HDL assignment warning at spi_interface.v(206): truncated value with size 8 to match size of target (3)
+Warning (10230): Verilog HDL assignment warning at spi_interface.v(311): truncated value with size 32 to match size of target (5)
+Warning (10230): Verilog HDL assignment warning at spi_interface.v(419): truncated value with size 12 to match size of target (11)
+Warning (10230): Verilog HDL assignment warning at spi_interface.v(433): truncated value with size 12 to match size of target (11)
+Warning (10235): Verilog HDL Always Construct warning at spi_interface.v(482): variable "end_read_data_flag" is read inside the Always Construct but isn't in the Always Construct's Event Control
+Info (10041): Inferred latch for "DOUT[0]" at spi_interface.v(145)
+Info (10041): Inferred latch for "DOUT[1]" at spi_interface.v(145)
+Info (10041): Inferred latch for "DOUT[2]" at spi_interface.v(145)
+Info (10041): Inferred latch for "DOUT[3]" at spi_interface.v(145)
+Info (10041): Inferred latch for "DOUT[4]" at spi_interface.v(145)
+Info (10041): Inferred latch for "DOUT[5]" at spi_interface.v(145)
+Info (10041): Inferred latch for "DOUT[6]" at spi_interface.v(145)
+Info (10041): Inferred latch for "DOUT[7]" at spi_interface.v(145)
+Info (12128): Elaborating entity "write_SPI" for hierarchy "spi_interface:SPI_IFACE_INST|write_SPI:write_spi_inst"
+Warning (10230): Verilog HDL assignment warning at write_SPI.v(102): truncated value with size 32 to match size of target (5)
+Warning (10027): Verilog HDL or VHDL warning at the write_SPI.v(158): index expression is not wide enough to address all of the elements in the array
+Info (12128): Elaborating entity "read_SPI" for hierarchy "spi_interface:SPI_IFACE_INST|read_SPI:read_spi_inst"
+Warning (10230): Verilog HDL assignment warning at read_SPI.v(120): truncated value with size 32 to match size of target (3)
+Info (12128): Elaborating entity "active_transfer_library" for hierarchy "active_transfer_library:ACTIVE_TRANSFER_LIBRARY_INST"
+Info (12128): Elaborating entity "eptWireOR" for hierarchy "eptWireOR:wireOR"
+Info (12128): Elaborating entity "active_trigger" for hierarchy "active_trigger:ACTIVE_TRIGGER_INST"
+Info (12128): Elaborating entity "active_transfer" for hierarchy "active_transfer:ACTIVE_TRANSFER_INST_1"
+Warning (13024): Output pins are stuck at VCC or GND
+    Warning (13410): Pin "bc_out[0]" is stuck at GND
+    Warning (13410): Pin "LB_SER[0]" is stuck at GND
+    Warning (13410): Pin "LB_SER[1]" is stuck at GND
+    Warning (13410): Pin "LB_IOH[0]" is stuck at GND
+    Warning (13410): Pin "LB_IOH[1]" is stuck at GND
+    Warning (13410): Pin "LB_IOH[2]" is stuck at GND
+    Warning (13410): Pin "LB_IOH[3]" is stuck at GND
+    Warning (13410): Pin "LB_IOH[4]" is stuck at GND
+    Warning (13410): Pin "LB_IOH[5]" is stuck at GND
+    Warning (13410): Pin "LB_IOH[6]" is stuck at GND
+    Warning (13410): Pin "LB_IOH[7]" is stuck at GND
+    Warning (13410): Pin "LB_IOL[0]" is stuck at GND
+    Warning (13410): Pin "LB_IOL[1]" is stuck at GND
+    Warning (13410): Pin "LB_IOL[2]" is stuck at GND
+    Warning (13410): Pin "LB_IOL[3]" is stuck at GND
+    Warning (13410): Pin "LB_IOL[4]" is stuck at GND
+    Warning (13410): Pin "LB_IOL[5]" is stuck at GND
+    Warning (13410): Pin "LB_IOL[6]" is stuck at GND
+    Warning (13410): Pin "LB_IOL[7]" is stuck at GND
+    Warning (13410): Pin "TR_DIR_1" is stuck at GND
+    Warning (13410): Pin "TR_OE_1" is stuck at GND
+    Warning (13410): Pin "TR_DIR_2" is stuck at GND
+    Warning (13410): Pin "TR_OE_2" is stuck at GND
+    Warning (13410): Pin "TR_DIR_3" is stuck at GND
+    Warning (13410): Pin "TR_OE_3" is stuck at GND
+Info (18000): Registers with preset signals will power-up high
+Info (17049): 2 registers lost all their fanouts during netlist optimizations.
+Info (17016): Found the following redundant logic cells in design
+    Info (17048): Logic cell "active_transfer:ACTIVE_TRANSFER_INST_1|uc_out~8"
+    Info (17048): Logic cell "active_transfer:ACTIVE_TRANSFER_INST_2|uc_out~9"
+    Info (17048): Logic cell "active_transfer:ACTIVE_TRANSFER_INST_4|uc_out~10"
+Warning (21074): Design contains 2 input pin(s) that do not drive logic
+    Warning (15610): No output dependent on input pin "SW_USER_1"
+    Warning (15610): No output dependent on input pin "SW_USER_2"
+Info (21057): Implemented 672 device resources after synthesis - the final resource count might be different
+    Info (21058): Implemented 8 input pins
+    Info (21059): Implemented 41 output pins
+    Info (21060): Implemented 8 bidirectional pins
+    Info (21061): Implemented 615 logic cells
+Info (144001): Generated suppressed messages file C:/Jolly/Code_FPGA/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_Top/output_files/EPT_5M57_AP_U2_Top.map.smsg
+Info: Quartus II 64-Bit Analysis & Synthesis was successful. 0 errors, 45 warnings
+    Info: Peak virtual memory: 465 megabytes
+    Info: Processing ended: Thu Jun 18 22:30:02 2015
+    Info: Elapsed time: 00:00:03
+    Info: Total CPU time (on all processors): 00:00:02
+
+
++------------------------------------------+
+; Analysis & Synthesis Suppressed Messages ;
++------------------------------------------+
+The suppressed messages can be found in C:/Jolly/Code_FPGA/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_UnoProLyzer/EPT_5M57_AP_U2_Top/output_files/EPT_5M57_AP_U2_Top.map.smsg.
+
+
