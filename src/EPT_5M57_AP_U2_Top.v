@@ -5,7 +5,7 @@
 //#
 //# File Name:  EPT_5M57_AP_U2_Top.v
 //# Author:     R. Jolly
-//# Date:       February 22, 2015
+//# Date:       July 8, 2015
 //# Revision:   A
 //#
 //# Development: USB Test Tool Interface board 
@@ -20,7 +20,7 @@
 //#
 //# Revision History:	
 //#			DATE		VERSION		DETAILS		
-//#			2/22/15 	A			Created			RJJ
+//#			7/8/15 	    A			Created			RJJ
 //#                     			RJJ
 //#
 //#									
@@ -80,6 +80,20 @@ module EPT_5M57_AP_U2_Top (
    // Parameter Declarations
    //-----------------------------------------------
 
+  //parameter    GLOBAL_RESET_COUNT          = 4'hf;
+// `ifdef SIM
+//  parameter    ADC_CONVST_CMD_DELAY        = 24'h500;
+//`else
+  //parameter    ADC_CONVST_CMD_DELAY        = 19'h50910; //5ms
+  //parameter    ADC_CONVST_CMD_DELAY        = 19'h101d0; //1ms
+  //parameter    ADC_CONVST_CMD_DELAY        = 19'h80e8; //0.5ms
+  //parameter    ADC_CONVST_CMD_DELAY        = 19'h19c8; //0.1ms
+  //parameter    ADC_CONVST_CMD_DELAY        = 19'hce4; //0.05ms
+  //parameter    ADC_CONVST_CMD_DELAY        = 19'h294; //0.01ms
+  //parameter    ADC_CONVST_CMD_DELAY        = 19'h42; //0.001ms
+//`endif  
+   //ADC Conversion Delay
+   //parameter    ADC_CNVST_DELAY_COUNT       = 8'h40;
 
    //State Machine 
    parameter 	IDLE                        = 0,
@@ -88,8 +102,11 @@ module EPT_5M57_AP_U2_Top (
                 START_DATA_RECEIVE          = 3,
                 WE_OUT_RCVD                 = 4,
 				DATA_RECEIVE_COMPLETE       = 5,
-                TRANSFER_TO_HOST            = 6,
-                TRANSFER_COMPLETE           = 7;
+				CHECK_RCV_DATA              = 6,
+				CHECK_RCV_DELAY             = 7,
+				UPDATE_CH_SELECT            = 8,
+                TRANSFER_TO_HOST            = 9,
+                TRANSFER_COMPLETE           = 10;
    
 `ifdef SIM
    	reg [8*30:1] state_name;
@@ -98,7 +115,7 @@ module EPT_5M57_AP_U2_Top (
    //------------------------------------------------
    // Wire and Register Declarations                
    //------------------------------------------------
-   	reg [7:0]                   state, next;
+   	reg [10:0]                   state, next;
 
     wire                        CLK_66;
 	wire                        RST;
@@ -109,64 +126,30 @@ module EPT_5M57_AP_U2_Top (
 	//Trigger Signals
 	wire [7:0]                  trigger_out;
 	wire [7:0]                  trigger_in_byte;	
-	reg [7:0]                   trigger_in_store;
 	
 	//Transfer registers
-	reg                         start_transfer;
-	reg                         start_transfer_reg;
-	reg   [7:0]                 transfer_out_byte;
-
-	//Transfer registers
-	reg                         transfer_out_reg;
-	wire                        transfer_in_received;
-	wire   [7:0]                transfer_in_byte;
-	wire   [7:0]                control_register;
 	reg    [7:0]                transfer_storage_register;
+	wire                        transfer_receive_start;
+	wire                        transfer_receive_busy;
+	wire                        transfer_receive_in;
+	reg                         serial_receive_start_transfer_reg;
 
 	//Serial SPI Receive Registers Unit 1
-	reg                         serial_receive_start_transfer;
-	reg                         serial_receive_start_transfer_reg;
-	wire                        serial_receive_in_received;
-	wire                        serial_receive_start_transfer_1;
 	wire  [7:0]                 serial_receive_out_byte;
-	wire  [7:0]                 serial_control_in_byte;	
+	//wire  [7:0]                 serial_control_in_byte;	
 	reg                         master_spi_initiate_receive;
 	reg                         master_spi_initiate_receive_reg;
 	wire                        spi_receive_word_enable;
 	
 	//Receive Storage registers Unit 1
 	reg  [7:0]                  serial_receive_data_storage;	
-    reg                         serial_receive_data_reg;
+    reg  [1:0]                  serial_receive_data_reg;
 	wire [7:0]                  transfer_in_byte_1;
 
-    //Serial SPI Receive Registers Unit 2
-	reg                         serial_receive_start_transfer_2;
-	reg                         serial_receive_start_transfer_reg_2;
-	wire                        serial_receive_in_received_2;
-	reg  [7:0]                  serial_receive_data_storage_2;	
-    reg                         serial_receive_data_reg_2;
-
-    //Serial SPI Receive Registers Unit 4
-	reg                         serial_receive_start_transfer_4;
-	reg                         serial_receive_start_transfer_reg_4;
-	wire                        serial_receive_in_received_4;
-	reg  [7:0]                  serial_receive_data_storage_4;	
-    reg                         serial_receive_data_reg_4;
-	//reg  [7:0]                  transfer_in_byte_4;
-
-    //Serial SPI Receive Registers Unit 5
-	reg                         serial_receive_start_transfer_5;
-	reg                         serial_receive_start_transfer_reg_5;
-	wire                        serial_receive_in_received_5;
-	reg  [7:0]                  serial_receive_data_storage_5;	
-    reg                         serial_receive_data_reg_5;
-	
 	//Serial SPI Transmit Registers
 	//wire                        serial_transmit_start_transfer;
 	wire                        serial_transmit_busy;
 	wire                        serial_transmit_in_received;
-	//reg  [7:0]                  serial_transmit_out_byte;
-	//wire [7:0]                  serial_transmit_in_byte;	
 	wire                        spi_transmit_word_enable;
 	reg                         master_spi_initiate_transmit;
 	reg                         master_spi_initiate_transmit_reg;
@@ -174,26 +157,32 @@ module EPT_5M57_AP_U2_Top (
 	reg                         master_spi_transmit_byte_reg;
 	
 	
+	//Block 1 Control Registers
+	reg                         start_block_out;
+	wire                        block_byte_ready;
+    //wire [7:0]                  block_in_data;
+	wire                        block_in_rcv;
+	//reg                         block_in_loopback;
+	//wire  [7:0]                 ept_length;
+	wire  [7:0]                 uc_length;
+	wire                        block_busy;
+	wire  [7:0]                 block_out_byte;
+
+	
+	
 	//ADC conversion start ontrol registers
 	reg   [1:0]                 adc_cnvst_reg;
-    //reg   [7:0]                 adc_cnvst_counter;	
-	reg                         adc_conv_start;
+ 	reg                         adc_conv_start;
 	reg                         adc_convst_cmd;
 	reg                         adc_convst_cmd_reg;
-	reg  [21:0]                 adc_convst_cmd_count;
-	reg  [21:0]                 adc_convst_delay_value;
+	reg  [15:0]                 adc_convst_cmd_count;
+	reg  [15:0]                 adc_convst_delay_value;
 	
 	
 	//ADC end of conversion control rgisters
-	wire                        adc_end_of_conv;
+	//wire                        adc_end_of_conv;
 	reg                         adc_eoc_reg;
 	
-	//ADC Configuration Registers
-    //reg   [7:0]                 adc_setup_register;
-    //reg   [7:0]                 adc_averaging_register;
-    //reg   [7:0]                 adc_reset_register;
-	
-
     //ADC Data registers
 	reg                         adc_data_rcvd_msb;
 	
@@ -202,18 +191,23 @@ module EPT_5M57_AP_U2_Top (
 	reg   [2:0]                 adc_channel_select;
 	reg   [2:0]                 receive_endterm_select;
 	
+	//Block Memory Registers
+    reg   [7:0]                 mem_array [7:0];
+	reg   [2:0]                 mem_array_index;
+	
+	
 	
 	//TEST ONLY
 	//reg                         led_2_reg;
 	//reg  [3:0]                  STATE_OUT;
-	wire                        test_transfer_received_reg;
-	wire                        test_transfer_received_reg_5;
+	//wire                        test_transfer_received_reg;
+	//wire                        test_transfer_received_reg_5;
 	//wire [7:0]                  test_transmit_byte;
 	wire                        transfer_busy;
 	//reg                         test_delay_count_reg;
 	//reg  [23:0]                 test_delay_count;
-	wire  [3:0]                 ft245_test_state_out;
-	wire  [7:0]                 active_transfer_test_out;
+	//wire  [3:0]                 ft245_test_state_out;
+	//wire  [7:0]                 active_transfer_test_out;
 	//reg                         led1_assert;
 	//reg                         led1_assert_reg;
 	//reg [11:0]                  led1_assert_count;
@@ -226,11 +220,11 @@ module EPT_5M57_AP_U2_Top (
    //------------------------------------------------
    
    assign            TR_DIR_1  = 1'b0; //1 = A to B; 0 = B to A
-   assign            TR_OE_1  = 1'b0;
+   assign            TR_OE_1  = 1'b1;
    assign            TR_DIR_2  = 1'b0; //1 = A to B; 0 = B to A
-   assign            TR_OE_2  = 1'b0;
+   assign            TR_OE_2  = 1'b1;
    assign            TR_DIR_3  = 1'b0; //1 = A to B; 0 = B to A
-   assign            TR_OE_3  = 1'b0;  
+   assign            TR_OE_3  = 1'b1;  
 
    //Clock and Reset
    assign            CLK_66 = aa[1];
@@ -239,44 +233,48 @@ module EPT_5M57_AP_U2_Top (
    //assign            reset = reset_signal_reg;
    
     //Trigger In Byte
-   assign            trigger_out  = 8'h00;
+   //assign            trigger_out  = 8'h00;
 	
    //Output pins
    assign            ADC_CNVST = ~adc_conv_start;
    
    //Input pins
-   assign            adc_end_of_conv = ~ADC_EOC;
+   //assign            adc_end_of_conv = ~ADC_EOC;
    
-   //assign            serial_transmit_start_transfer = 1'b0;
-   //assign            serial_receive_start_transfer_5 = 1'b0;
+   //Block to host byte
+   assign            block_out_byte = mem_array[mem_array_index];
+   assign            uc_length = 8'h8;
+   
+   //Stub the transfer start for Transfer Endterm 1
+   //assign            transfer_receive_start = 1'b0;
     
 	//LEDs
-    assign           LED[0] = !ADC_CS ? 1'b0 : 1'bz;
-    assign           LED[1] = master_spi_initiate_transmit ? 1'b0: 1'bz;
-    assign           LED[2] = state[IDLE] ? 1'bz: (state[ADC_CONVST] ? 1'b0 : 1'bz);
-    assign           LED[3] = test_transfer_received_reg ? 1'b0 : 1'bz;
+    assign           LED[0] = 1'bz;//!ADC_CS ? 1'b0 : 1'bz;
+    assign           LED[1] = 1'bz;//master_spi_initiate_transmit ? 1'b0: 1'bz;
+    assign           LED[2] = 1'bz;//state[IDLE] ? 1'bz: (state[ADC_CONVST] ? 1'b0 : 1'bz);
+    assign           LED[3] = 1'bz;//adc_eoc_reg ? 1'b0 : 1'bz;
 	
 	//Debug LB_IOL Bus
- /*   assign           LB_IOL[0] = active_transfer_test_out[6];//active_transfer_test_out[4];//STATE_OUT[0];
-    assign           LB_IOL[1] = active_transfer_test_out[7];//active_transfer_test_out[5];//STATE_OUT[1];
-    assign           LB_IOL[2] = ft245_test_state_out[0];
-    assign           LB_IOL[3] = ft245_test_state_out[1];
-    assign           LB_IOL[4] = ft245_test_state_out[2];
-    assign           LB_IOL[5] = ft245_test_state_out[3];
-    assign           LB_IOL[6] = bc_in[1];//serial_transmit_in_received;
-    assign           LB_IOL[7] = bc_out[2];
-*/	
+    assign           LB_IOL[0] = 1'b0;//active_transfer_test_out[0];//block_out_byte[0];
+    assign           LB_IOL[1] = 1'b0;//active_transfer_test_out[1];//block_out_byte[1];
+    assign           LB_IOL[2] = 1'b0;//active_transfer_test_out[2];//block_out_byte[2];
+    assign           LB_IOL[3] = 1'b0;//active_transfer_test_out[3];//block_out_byte[3];
+    assign           LB_IOL[4] = 1'b0;//active_transfer_test_out[4];//block_out_byte[4];
+    assign           LB_IOL[5] = 1'b0;//active_transfer_test_out[5];//block_out_byte[5];
+    assign           LB_IOL[6] = 1'b0;//active_transfer_test_out[6];//block_out_byte[6];
+    assign           LB_IOL[7] = 1'b0;//active_transfer_test_out[7];//block_out_byte[7];
+	
 	
 	//Debug LB_IOH Bus
-/*    assign           LB_IOH[0] = active_transfer_test_out[0];
-    assign           LB_IOH[1] = active_transfer_test_out[1];
-    assign           LB_IOH[2] = active_transfer_test_out[2];
-    assign           LB_IOH[3] = active_transfer_test_out[3];
-    assign           LB_IOH[4] = active_transfer_test_out[4];
-    assign           LB_IOH[5] = active_transfer_test_out[5];
-    assign           LB_IOH[6] = trigger_in_byte[0];
-    assign           LB_IOH[7] = trigger_in_byte[3];
-*/	
+    assign           LB_IOH[0] = 1'b0;//mem_array_index[0];
+    assign           LB_IOH[1] = 1'b0;//mem_array_index[1];
+    assign           LB_IOH[2] = 1'b0;//mem_array_index[2];
+    assign           LB_IOH[3] = 1'b0;//mem_array_index[3];
+    assign           LB_IOH[4] = 1'b0;//mem_array_index[4];
+    assign           LB_IOH[5] = 1'b0;//block_byte_ready;
+    assign           LB_IOH[6] = 1'b0;
+    assign           LB_IOH[7] = 1'b0;
+	
 	//Debug LB_AD
     assign           LB_AD[0] = ADC_MOSI;//active_transfer_test_out[0];
     assign           LB_AD[1] = ADC_CLK;//active_transfer_test_out[1];
@@ -296,6 +294,8 @@ module EPT_5M57_AP_U2_Top (
 	        adc_convst_cmd <= 1'b0;
 			adc_convst_cmd_reg <= 1'b0;
 			adc_convst_cmd_count <= 0;
+			adc_conv_start <= 1'b0;
+			adc_cnvst_reg <= 2'b00;
 	  end
 	  else
 	  begin 
@@ -305,6 +305,8 @@ module EPT_5M57_AP_U2_Top (
 		     adc_convst_cmd <= 1'b1;
 			 adc_convst_cmd_reg <= 1'b1;
 	         adc_convst_cmd_count <= 0;
+			 adc_conv_start <= 1'b0;
+			 adc_cnvst_reg <= 2'b00;
 	      end
 	      //else if(control_register[3] & adc_convst_cmd_reg)
 	      else if(trigger_in_byte[3] & adc_convst_cmd_reg)
@@ -312,22 +314,93 @@ module EPT_5M57_AP_U2_Top (
 		      adc_convst_cmd <= 1'b0;
 	          adc_convst_cmd_reg <= 1'b0;
 	          adc_convst_cmd_count <= 0;
+			  adc_conv_start <= 1'b0;
+			  adc_cnvst_reg <= 2'b00;
 	      end
 	      else if(adc_convst_cmd_reg)
 	      begin
-		      if(adc_convst_cmd_count < adc_convst_delay_value)
+		  
+		      case(adc_cnvst_reg)
+			  2'b00:
 			  begin
-		         adc_convst_cmd <= 1'b0;
-		  	     adc_convst_cmd_count <= adc_convst_cmd_count + 1'd1;
+		         if(adc_convst_cmd_count < adc_convst_delay_value)
+		         begin
+		            adc_convst_cmd <= 1'b0;
+		            adc_convst_cmd_count <= adc_convst_cmd_count + 1'd1;
+		         end
+				 else
+		         begin
+		            adc_convst_cmd <= 1'b1;
+		             //adc_convst_cmd_count <= 0;
+					adc_cnvst_reg <= 2'b01;
+		         end
 			  end
-			  else
+			  2'b01:
 			  begin
-		         adc_convst_cmd <= 1'b1;
-				 adc_convst_cmd_count <= 0;
+			    adc_conv_start <= 1'b1;
+			    adc_cnvst_reg <= 2'b10;
 			  end
+			  2'b10:
+			  begin
+		        adc_convst_cmd <= 1'b0;
+			    adc_conv_start <= 1'b1;
+			    adc_cnvst_reg <= 2'b11;
+			  end
+			  2'b11:
+			  begin
+			    adc_conv_start <= 1'b0;
+				adc_convst_cmd_count <= 0;
+			    if(!adc_eoc_reg)
+			    begin
+			       adc_cnvst_reg <= 2'b00;
+			    end
+              end
+/*			  default:
+			  begin
+			       adc_convst_cmd <= 1'b0;
+			       adc_convst_cmd_count <= 0;
+			       adc_conv_start <= 1'b0;
+			       adc_cnvst_reg <= 2'b00;
+			  end
+*/			  endcase
 	      end
 	  end
 	end  
+   //-----------------------------------------------
+   // MAX11618 ADC Conversion Start   
+   //-----------------------------------------------
+/*	always @(posedge CLK_66 or negedge RST)
+	begin
+	  if(!RST)
+	  begin
+			adc_conv_start <= 1'b0;
+			adc_cnvst_reg <= 2'b00;
+	  end
+	  else
+	  begin
+	      if(state[ADC_CONVST] & (adc_cnvst_reg == 2'b00))
+		  begin
+			adc_conv_start <= 1'b1;
+			adc_cnvst_reg <= 2'b01;
+	      end
+	      else if(adc_cnvst_reg == 2'b01)
+	      begin
+			    adc_conv_start <= 1'b1;
+			    adc_cnvst_reg <= 2'b10;
+	      end
+	      else if(adc_cnvst_reg == 2'b10)
+	      begin
+			adc_conv_start <= 1'b1;
+			adc_cnvst_reg <= 2'b11;
+	      end
+	      else if(adc_cnvst_reg == 2'b11)
+	      begin
+			adc_conv_start <= 1'b0;
+			adc_cnvst_reg <= 2'b00;
+	      end
+	  end
+	end  
+*/
 	
    //-----------------------------------------------
    // Create a State Test Output Signal
@@ -373,9 +446,10 @@ module EPT_5M57_AP_U2_Top (
 	  if(!RST)
 	  begin
  `ifdef SIM
-            adc_convst_delay_value <= 22'h500;
+            adc_convst_delay_value <= 16'h500;
 `else
-	        adc_convst_delay_value <= 22'h000ce4; //0.07ms
+	        //adc_convst_delay_value <= 19'h000ce4; //0.07ms
+	        adc_convst_delay_value <= 16'h80e8; //0.5ms
 `endif
 	  end
 	  else
@@ -391,10 +465,10 @@ module EPT_5M57_AP_U2_Top (
 		    adc_convst_delay_value[15:8] <= transfer_in_byte_1;
 	      end
 	      //else if(control_register[6])
-	      else if(trigger_in_byte[6])
-	      begin
-		    adc_convst_delay_value[21:16] <= transfer_in_byte_1;
-	      end
+	      //else if(trigger_in_byte[6])
+	      //begin
+		  //  adc_convst_delay_value[16] <= 1'b0;//transfer_in_byte_1[0];
+	      //end
 	  end
 	end  
 	
@@ -410,10 +484,11 @@ module EPT_5M57_AP_U2_Top (
             adc_channels_to_read <= 0;
 	  end
 	  else
-	  begin
-	      if(master_spi_transmit_byte_reg & (transfer_storage_register[7] == 1'b1))
+	  begin 
+	      if(master_spi_initiate_transmit & (transfer_storage_register[7] == 1'b1))
 	      begin
-	         adc_channels_to_read = transfer_storage_register[4:3] + 1'd1;
+	         //adc_channels_to_read = transfer_storage_register[4:3] + 1'd1;
+	         adc_channels_to_read = transfer_storage_register[4:3];
 	      end
 	  end
 	end  
@@ -426,28 +501,12 @@ module EPT_5M57_AP_U2_Top (
 	  if(!RST)
 	  begin
 			transfer_storage_register <= 0;
-			master_spi_transmit_byte <= 1'b0;
-			master_spi_transmit_byte_reg <= 1'b0;
 	  end
 	  else
 	  begin
-	      //if(control_register[1] & !master_spi_transmit_byte_reg)
-	      if(trigger_in_byte[1] & !master_spi_transmit_byte_reg)
+	      if(trigger_in_byte[1])
 	      begin
 			transfer_storage_register <= transfer_in_byte_1;
-			master_spi_transmit_byte <= 1'b1;
-			master_spi_transmit_byte_reg <= 1'b1;
-	      end
-	      //else if(control_register[1] & master_spi_transmit_byte_reg)
-	      else if(trigger_in_byte[1] & master_spi_transmit_byte_reg)
-	      begin
-			master_spi_transmit_byte <= 1'b0;
-			master_spi_transmit_byte_reg <= 1'b1;
-	      end
-	      //else if(!control_register[1] & master_spi_transmit_byte_reg)
-	      else if(!trigger_in_byte[1] & master_spi_transmit_byte_reg)
-	      begin
-			master_spi_transmit_byte_reg <= 1'b0;
 	      end
 	  end
 	end  
@@ -491,74 +550,20 @@ module EPT_5M57_AP_U2_Top (
 	  if(!RST)
 	  begin
 			master_spi_initiate_transmit <= 1'b0;
-			master_spi_initiate_transmit_reg <= 1'b0;
 	  end
 	  else
 	  begin 
-	      //if(control_register[0] & !master_spi_initiate_transmit_reg)
-	      if(trigger_in_byte[0] & !master_spi_initiate_transmit_reg)
+	      if(trigger_in_byte[0])
 	      begin
 			master_spi_initiate_transmit <= 1'b1;
-			master_spi_initiate_transmit_reg <= 1'b1;
 	      end
-	      //else if(control_register[0] & master_spi_initiate_transmit_reg)
-	      else if(trigger_in_byte[0] & master_spi_initiate_transmit_reg)
+	      else //if(!trigger_in_byte[0])
 	      begin
 			master_spi_initiate_transmit <= 1'b0;
-			master_spi_initiate_transmit_reg <= 1'b1;
-	      end
-	      //else if(!control_register[0] & master_spi_initiate_transmit_reg)
-	      else if(!trigger_in_byte[0] & master_spi_initiate_transmit_reg)
-	      begin
-			master_spi_initiate_transmit <= 1'b0;
-			master_spi_initiate_transmit_reg <= 1'b0;
 	      end
 	  end
 	end  
 
-   //-----------------------------------------------
-   // MAX11618 ADC Conversion Start   
-   //-----------------------------------------------
-	always @(posedge CLK_66 or negedge RST)
-	begin
-	  if(!RST)
-	  begin
-			adc_conv_start <= 1'b0;
-			adc_cnvst_reg <= 2'b00;
-			//adc_cnvst_counter <= 0;
-	  end
-	  else
-	  begin
-	      //if(control_register[2] & (adc_cnvst_reg == 2'b00))
-	      if(state[ADC_CONVST] & (adc_cnvst_reg == 2'b00))
-		  begin
-			adc_conv_start <= 1'b1;
-			adc_cnvst_reg <= 2'b01;
-	      end
-	      else if(adc_cnvst_reg == 2'b01)
-	      begin
-		     //if(adc_cnvst_counter < ADC_CNVST_DELAY_COUNT)
-			 //   adc_cnvst_counter <= adc_cnvst_counter + 1'd1;
-			 //else
-			 //begin
-			    adc_conv_start <= 1'b1;
-			    adc_cnvst_reg <= 2'b10;
-				//adc_cnvst_counter <= 0;
-			 //end
-	      end
-	      //else if(!state[ADC_CONVST] & (adc_cnvst_reg == 2'b10))
-	      else if(adc_cnvst_reg == 2'b10)
-	      begin
-			adc_conv_start <= 1'b1;
-			adc_cnvst_reg <= 2'b11;
-	      end
-	      else if(adc_cnvst_reg == 2'b11)
-	      begin
-			adc_conv_start <= 1'b0;
-			adc_cnvst_reg <= 2'b00;
-	      end
-	  end
-	end  
 
    //-----------------------------------------------
    // Register the ADC_EOC signal    
@@ -598,11 +603,11 @@ module EPT_5M57_AP_U2_Top (
 	      begin
 			adc_data_rcvd_msb <= 1'b1;
 	      end
-	      else if(state[TRANSFER_TO_HOST] & !spi_receive_word_enable)
+	      else if(state[CHECK_RCV_DELAY])//& !spi_receive_word_enable)
 	      begin
 			adc_data_rcvd_msb <= 1'b0;
 	      end
-		  else if(state[TRANSFER_COMPLETE])
+		  else if(state[UPDATE_CH_SELECT])
 	      begin
 			adc_data_rcvd_msb <= 1'b1;
 	      end
@@ -626,7 +631,7 @@ module EPT_5M57_AP_U2_Top (
 	      begin
 			adc_channel_select <= adc_channels_to_read;
 	      end
-	      else if(state[TRANSFER_TO_HOST] & !adc_data_rcvd_msb)
+	      else if(state[UPDATE_CH_SELECT] & !adc_data_rcvd_msb)
 	      begin
 	         if(adc_channel_select > 0)
 		        adc_channel_select = adc_channel_select - 1'd1;
@@ -642,93 +647,100 @@ module EPT_5M57_AP_U2_Top (
 	begin
 	  if(!RST)
 	  begin
-			serial_receive_data_storage <= 0;
-			serial_receive_data_reg <= 1'b0;
+			//serial_receive_data_storage <= 0;
+			serial_receive_data_reg <= 2'b00;
 			receive_endterm_select <= 0;
 	  end
 	  else
 	  begin
-	        if(state[DATA_RECEIVE_COMPLETE] & !serial_receive_data_reg)
+	        if(state[DATA_RECEIVE_COMPLETE] & (serial_receive_data_reg == 2'b00))
 			begin
-			   if(adc_channel_select > 0)
+			   //if(adc_channel_select > 0)
 			       receive_endterm_select <= adc_channels_to_read - adc_channel_select;
-			   else
-			       receive_endterm_select <= 3'h1;
+			   //else
+			   //   receive_endterm_select <= 3'h1;
+			   serial_receive_data_reg <= 2'b01;
+			end
+			else if(state[DATA_RECEIVE_COMPLETE] & (serial_receive_data_reg == 2'b01))
+			begin
 			   case(receive_endterm_select)
 			   3'h0:
 			   begin
-	              serial_receive_data_storage <= serial_receive_out_byte;
-			      serial_receive_data_reg <= 1'b1;
+			      if(adc_data_rcvd_msb)
+	                 mem_array[0] <= {4'h0,serial_receive_out_byte[3:0]};
+			      else
+	                 mem_array[1] <= {serial_receive_out_byte[7:2],2'h0};
+			      serial_receive_data_reg <= 2'b10;
 			   end
 			   3'h1:
 			   begin
-	              transfer_out_byte <= serial_receive_out_byte;			   
-			      serial_receive_data_reg <= 1'b1;
+			      if(adc_data_rcvd_msb)
+	                 mem_array[2] <= {4'h0,serial_receive_out_byte[3:0]};
+			      else
+	                 mem_array[3] <= {serial_receive_out_byte[7:2],2'h0};
+			      serial_receive_data_reg <= 2'b10;
 			   end
 			   3'h2:
 			   begin
-	              serial_receive_data_storage_4 <= serial_receive_out_byte;			   
-			      serial_receive_data_reg <= 1'b1;
+			      if(adc_data_rcvd_msb)
+	                 mem_array[4] <= {4'h0,serial_receive_out_byte[3:0]};
+			      else
+	                 mem_array[5] <= {serial_receive_out_byte[7:2],2'h0};
+			      serial_receive_data_reg <= 2'b10;
+			   end
+			   3'h3:
+			   begin
+			      if(adc_data_rcvd_msb)
+	                 mem_array[6] <= {4'h0,serial_receive_out_byte[3:0]};
+			      else
+	                 mem_array[7] <= {serial_receive_out_byte[7:2],2'h0};
+			      serial_receive_data_reg <= 2'b10;
 			   end
 			   default:
 			   begin
-	              serial_receive_data_storage <= serial_receive_out_byte;
-			      serial_receive_data_reg <= 1'b1;
+			      serial_receive_data_reg <= 2'b10;
 			   end
 			   endcase
 			end
-	        else if(state[TRANSFER_TO_HOST] & serial_receive_data_reg)
+	        else if(state[CHECK_RCV_DATA] & (serial_receive_data_reg == 2'b10))
 			begin
-			   serial_receive_data_reg <= 1'b0;
+			   serial_receive_data_reg <= 2'b00;
 			end
 	  end
 	end
 	
 
    //-----------------------------------------------
-   // Start Transfer on the Active Transfer EndTerm 3
-   // This will send the ADC Data to the EndTerm 3.
+   // Start Transfer on the Active Block EndTerm 1
+   // This will send the ADC Data to the EndTerm 1.
    //-----------------------------------------------
 	always @(posedge CLK_66 or negedge RST)
 	begin
 	  if(!RST)
 	  begin
-			serial_receive_start_transfer <= 1'b0;
-			serial_receive_start_transfer_2 <= 1'b0;
-			serial_receive_start_transfer_4 <= 1'b0;
+			start_block_out <= 1'b0;
 			serial_receive_start_transfer_reg <= 1'b0;
+			mem_array_index <= 0;
 	  end
 	  else
 	  begin
-	        if(state[TRANSFER_TO_HOST] & !serial_receive_start_transfer_reg)
-			begin
-			   case(receive_endterm_select)
-			   3'h0:
-	              serial_receive_start_transfer <= 1'b1;
-			   3'h1:
-	              serial_receive_start_transfer_2 <= 1'b1;			   
-			   3'h2:
-	              serial_receive_start_transfer_4 <= 1'b1;			   
-			   default:
-	              serial_receive_start_transfer <= 1'b1;
-			   endcase
-	           //serial_receive_start_transfer <= 1'b1;
-			   serial_receive_start_transfer_reg <= 1'b1;
-			end
-			else if(state[TRANSFER_TO_HOST] & serial_receive_start_transfer_reg)
-			begin
-	           serial_receive_start_transfer <= 1'b0;
-			   serial_receive_start_transfer_2 <= 1'b0;
-			   serial_receive_start_transfer_4 <= 1'b0;
-			   serial_receive_start_transfer_reg <= 1'b1;
-			end
-			else if(!state[TRANSFER_TO_HOST] & serial_receive_start_transfer_reg)
-			begin
-	           serial_receive_start_transfer <= 1'b0;
-			   serial_receive_start_transfer_2 <= 1'b0;
-			   serial_receive_start_transfer_4 <= 1'b0;
-			   serial_receive_start_transfer_reg <= 1'b0;
-			end
+         if(state[TRANSFER_TO_HOST] & !serial_receive_start_transfer_reg)
+         begin
+		     start_block_out <= 1'b1;
+			 serial_receive_start_transfer_reg <= 1'b1;
+			 
+		 end
+		 else if(state[TRANSFER_TO_HOST] & serial_receive_start_transfer_reg)
+		 begin
+		    if(block_byte_ready)
+			   mem_array_index <= mem_array_index + 1'd1;
+		 end
+		 else if(state[TRANSFER_COMPLETE])
+         begin
+		     start_block_out <= 1'b0;
+			 serial_receive_start_transfer_reg <= 1'b0;
+			 mem_array_index <= 0;
+		 end
 	  end
 	end
 	
@@ -747,20 +759,16 @@ module EPT_5M57_AP_U2_Top (
 	  state <= next;
      end
 
-	 always @ ( state /*or master_spi_transmit_byte or spi_transmit_word_enable*/
-	      or /*master_spi_initiate_transmit or */ADC_EOC or adc_end_of_conv or master_spi_initiate_receive
+	 always @ ( state or mem_array_index or block_byte_ready
+	      or ADC_EOC or adc_eoc_reg or master_spi_initiate_receive
 	      or spi_receive_word_enable or adc_conv_start or adc_data_rcvd_msb 
-		  or /*control_register*/ trigger_in_byte or adc_convst_cmd)
+		  or trigger_in_byte or adc_convst_cmd)
 
      begin
 	next = 8'h000;
 
 	if (state[IDLE])
 	  begin
-	     //if(master_spi_transmit_byte)
-	     //  next[LOAD_REGISTER_DATA] = 1'b1;
-	     //else if(adc_conv_start)
-		// else if(adc_convst_cmd)
 		 if(adc_convst_cmd)
 	       next[ADC_CONVST] = 1'b1;
 		else
@@ -772,7 +780,7 @@ module EPT_5M57_AP_U2_Top (
 
 	if (state[WAIT_FOR_EOC])
 	begin
-	    if(/*!ADC_EOC*/!adc_eoc_reg)
+	    if(!adc_eoc_reg)
 		    next[START_DATA_RECEIVE] = 1'b1;
 	    else 
 		    next[WAIT_FOR_EOC] = 1'b1;
@@ -797,16 +805,33 @@ module EPT_5M57_AP_U2_Top (
 	if (state[DATA_RECEIVE_COMPLETE])
 	begin
 	   if(!spi_receive_word_enable)
-	      next[TRANSFER_TO_HOST] = 1'b1;
+	      next[CHECK_RCV_DATA] = 1'b1;
 	    else 
 		    next[DATA_RECEIVE_COMPLETE] = 1'b1;
 	end
 
+	if (state[CHECK_RCV_DATA])
+	begin
+	   if(!adc_data_rcvd_msb)
+		 next[UPDATE_CH_SELECT] = 1'b1;
+	   else
+         next[CHECK_RCV_DELAY] = 1'b1;
+	end
+	
+	if (state[CHECK_RCV_DELAY])
+		 next[START_DATA_RECEIVE] = 1'b1;
+	
+	if (state[UPDATE_CH_SELECT])
+	begin
+	   if(adc_channel_select > 0)
+		 next[START_DATA_RECEIVE] = 1'b1;
+	   else
+		 next[TRANSFER_TO_HOST] = 1'b1;
+	end
+	
 	if (state[TRANSFER_TO_HOST])
 	begin
-	   if(adc_data_rcvd_msb)
-		 next[START_DATA_RECEIVE] = 1'b1;
-	   else if(!adc_data_rcvd_msb)
+	   if(mem_array_index >= 3'h7)
 		 next[TRANSFER_COMPLETE] = 1'b1;
 	   else
          next[TRANSFER_TO_HOST] = 1'b1;
@@ -814,7 +839,7 @@ module EPT_5M57_AP_U2_Top (
 
 	if (state[TRANSFER_COMPLETE])
 	begin
-	   if(adc_channel_select > 0)
+	   if(!serial_receive_start_transfer_reg)
 	      next[START_DATA_RECEIVE] = 1'b1;
 	   else
 			next[IDLE] = 1'b1;	
@@ -833,6 +858,12 @@ module EPT_5M57_AP_U2_Top (
 	  state_name = "WE_OUT_RCVD";
 	else if (state == (1 <<   DATA_RECEIVE_COMPLETE))
 	  state_name = "DATA_RECEIVE_COMPLETE";
+	else if (state == (1 <<   CHECK_RCV_DATA))
+	  state_name = "CHECK_RCV_DATA";
+	else if (state == (1 <<   CHECK_RCV_DELAY))
+	  state_name = "CHECK_RCV_DELAY";
+	else if (state == (1 <<   UPDATE_CH_SELECT))
+	  state_name = "UPDATE_CH_SELECT";
 	else if (state == (1 << TRANSFER_TO_HOST))
 	  state_name = "TRANSFER_TO_HOST";
 	else if (state == (1 << TRANSFER_COMPLETE))
@@ -846,7 +877,7 @@ module EPT_5M57_AP_U2_Top (
    //-----------------------------------------------
    // Instantiate the SPI Interface
    //-----------------------------------------------
-	spi_interface               SPI_IFACE_INST
+	spi_iface_model             SPI_IFACE_INST
 	(
 	.CLK                        (CLK_66), 
 	.RST_N                      (RST),
@@ -858,7 +889,6 @@ module EPT_5M57_AP_U2_Top (
 
 	.DIN                        (transfer_storage_register),
 	.WE_IN                      (master_spi_initiate_transmit),
-	.RDY_IN                     (spi_transmit_word_enable),
 
 	.DOUT                       (serial_receive_out_byte),
 	.WE_OUT_N                   (spi_receive_word_enable),
@@ -889,19 +919,19 @@ module EPT_5M57_AP_U2_Top (
    //-----------------------------------------------
    // Instantiate the EPT Active Modules
    //-----------------------------------------------
-wire [22*4-1:0]  uc_out_m;
-eptWireOR # (.N(4)) wireOR (UC_OUT, uc_out_m);
+wire [22*3-1:0]  uc_out_m;
+eptWireOR # (.N(3)) wireOR (UC_OUT, uc_out_m);
 
     //
 	// Trigger_In Mapping
-	// trigger_in_byte[0] = Master SPI Transmit Start to the ADC.
-	// trigger_in_byte[1] = Store the register value to transmit to the ADC.
-	// trigger_in_byte[2] = Start ADC Conversion Continuous
-	// trigger_in_byte[3] = Stop ADC Conversions
-	// trigger_in_byte[4] = Load adc_convst_delay register Byte 1
-	// trigger_in_byte[5] = Load adc_convst_delay register Byte 2
-	// trigger_in_byte[6] = Load adc_convst_delay register Byte 3
-	// trigger_in_byte[7] = 
+	// control_register[0] = Master SPI Transmit Start to the ADC.
+	// control_register[1] = Store the register value to transmit to the ADC.
+	// control_register[2] = Start ADC Conversion Continuous
+	// control_register[3] = Stop ADC Conversions
+	// control_register[4] = Load adc_convst_delay register Byte 1
+	// control_register[5] = Load adc_convst_delay register Byte 2
+	// control_register[6] = Load adc_convst_delay register Byte 3
+	// control_register[7] = 
 	active_trigger             ACTIVE_TRIGGER_INST
 	(
 	 .uc_clk                   (CLK_66),
@@ -922,52 +952,40 @@ eptWireOR # (.N(4)) wireOR (UC_OUT, uc_out_m);
 	 .uc_in                    (UC_IN),
 	 .uc_out                   (uc_out_m[ 1*22 +: 22 ]),
 	
-	 .start_transfer           (serial_receive_start_transfer),
-	 .transfer_received        (test_transfer_received_reg),//(serial_receive_in_received),
+	 .start_transfer           (transfer_receive_start),
+	 .transfer_received        (transfer_receive_in),
 	 
-	 .transfer_busy            (serial_receive_start_transfer_1),
+	 .transfer_busy            (transfer_receive_busy),
 	
 	 .uc_addr                  (3'h1),
 
-	 .transfer_to_host         (serial_receive_data_storage),
+	 .transfer_to_host         (),//serial_receive_data_storage),
 	 .transfer_to_device       (transfer_in_byte_1)//()	
 	);
 
-	active_transfer            ACTIVE_TRANSFER_INST_2
+	active_block               BLOCK_TRANSFER_INST
 	(
 	 .uc_clk                   (CLK_66),
 	 .uc_reset                 (RST),
 	 .uc_in                    (UC_IN),
 	 .uc_out                   (uc_out_m[ 2*22 +: 22 ]),
 	
-	 .start_transfer           (serial_receive_start_transfer_2),
-	 .transfer_received        (transfer_in_received),
+	 .start_transfer           (start_block_out),
+	 .transfer_received        (block_in_rcv),
 	 
-	 .transfer_busy            (transfer_busy),
-	
-	 .uc_addr                  (3'h2),
+	 .transfer_ready           (block_byte_ready),
+	 .transfer_busy            (block_busy),
 
-	 .transfer_to_host         (transfer_out_byte),
-	 .transfer_to_device       (transfer_in_byte)	
-	);
+	 .ept_length               (),
 	
-	active_transfer            ACTIVE_TRANSFER_INST_4
-	(
-	 .uc_clk                   (CLK_66),
-	 .uc_reset                 (RST),
-	 .uc_in                    (UC_IN),
-	 .uc_out                   (uc_out_m[ 3*22 +: 22 ]),
-	
-	 .start_transfer           (serial_receive_start_transfer_4),
-	 .transfer_received        (serial_transmit_in_received),
-	 
-	 .transfer_busy            (serial_transmit_busy),
-	
-	 .uc_addr                  (3'h4),
+	 .uc_addr                  (3'h1),
+	 .uc_length                (uc_length),
 
-	 .transfer_to_host         (serial_receive_data_storage_4),
-	 .transfer_to_device       ()//(serial_transmit_in_byte)	
+	 .transfer_to_host         (block_out_byte),
+	 .transfer_to_device       ()
+	
 	);
+
 
 	
 endmodule

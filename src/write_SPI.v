@@ -10,6 +10,7 @@
  * This header files defines the input/output
 ******************************************************/
 
+
 `timescale 1 ns / 10 ps
 
 module write_SPI
@@ -19,11 +20,11 @@ module write_SPI
 	input wire                  START,
 	input wire   [7:0]          DIN,
    
-	output wire                 DONE,
+	output reg                  DONE,
 	output reg                  DATA_OUT,
-	output reg                  SCLK,
+	output reg                  SCLK//,
 
-	output reg                  PERFORM_READ
+	//output reg                  PERFORM_READ
    );
 
    //----------------------------------------------
@@ -33,18 +34,15 @@ module write_SPI
 	     LOAD_FIRST_BIT		= 1,
 	     CLOCK_HI			= 2,
 	     CLOCK_LOW			= 3,
-	     WRITE_DONE		= 4,
-		CLOCK_HI_DELAY		= 5,
-		CLOCK_LO_DELAY		= 6,
-		LOAD_FIRST_BIT_DELAY = 7;
+	     WRITE_DONE		    = 4;
    
    //------------------------------------------------
    // Wire and Register Declarations                
    //------------------------------------------------
-   reg [4:0]   bit_count;
+   reg [2:0]   bit_count;
    reg [7:0]   shift_reg;
    
-   reg [7:0]   state, next;
+   reg [4:0]   state, next;
 
 `ifdef SIM
    reg [8*20:1] state_name;
@@ -53,30 +51,30 @@ module write_SPI
    //------------------------------------------------
    // Signal Assignments  
    //------------------------------------------------
-	assign		DONE = state[WRITE_DONE] ? 1'b1 : 1'b0;
-	
+	//assign		DONE = state[WRITE_DONE] ? 1'b1 : 1'b0;
 	
    //------------------------------------------------
    // Create a DONE Signal when the byte has been transmitted
    //------------------------------------------------
-//   always @(posedge CLK or negedge RST_N)
-//     begin
-//	if (!RST_N)
-//	  DONE <= 0;
-//	else
-//	  begin
-//	     if (state[WRITE_DONE])
-//	       DONE <= 1;
-//	     else
-//	       DONE <= 0;
-//	  end
-//     end // always @ (posedge CLK or negedge RST_N)
+   always @(posedge CLK or negedge RST_N)
+     begin
+	if (!RST_N)
+	  DONE <= 1'b0;
+	else
+	  begin
+	     if (state[WRITE_DONE])
+	       DONE <= 1'b1;
+	     else
+	       DONE <= 1'b0;
+	  end
+     end // always @ (posedge CLK or negedge RST_N)
 
+	
    //------------------------------------------------
    // PERFORM_READ register signals when the byte 
    // transfer has started
    //------------------------------------------------
-   always @(posedge CLK or negedge RST_N)
+/*   always @(posedge CLK or negedge RST_N)
    begin
 	  if (!RST_N)
 	     PERFORM_READ <= 0;
@@ -88,7 +86,7 @@ module write_SPI
 	         PERFORM_READ <= 0;
 	end
    end // always @ (posedge CLK or negedge RST_N)
-
+*/
    //------------------------------------------------
    // Create a bit_count of the number of bits sent
    //------------------------------------------------
@@ -108,26 +106,24 @@ module write_SPI
    //------------------------------------------------
    // Create a Serial Clock Out
    //------------------------------------------------
+   //assign SCLK = (state[CLOCK_HI]) ? 1'b1 : 1'b0;
    always @(posedge CLK or negedge RST_N)
      begin
 	if (!RST_N)
 	  SCLK <= 0;
 	else
 	  begin
-	  	if(state[LOAD_FIRST_BIT] || state[LOAD_FIRST_BIT_DELAY])
+	  	if(state[LOAD_FIRST_BIT])
 			SCLK <= 0;
-	     else if (state[CLOCK_HI] || state[CLOCK_HI_DELAY] )
-	       //SCLK <= 1;
+	     else if (state[CLOCK_HI])
 			SCLK <= 1;
-		 else if (state[CLOCK_LOW] || state[CLOCK_LO_DELAY] )
+		 else if (state[CLOCK_LOW])
 			SCLK <= 0;
-	     else if (state[WRITE_DONE] )
+	     else if (state[WRITE_DONE])
 	       SCLK <= 0;
-		 //else
-		 //  SCLK <= 1;
 	  end
      end // always @ (posedge CLK or negedge RST_N)
-   
+ 
    //------------------------------------------------
    // Shift Data Out
    //------------------------------------------------
@@ -145,11 +141,11 @@ module write_SPI
 		  DATA_OUT <= 0;
 		  shift_reg <= DIN;
 	       end
-	     else if (state[IDLE] && PERFORM_READ)
-	       begin
-		  DATA_OUT <= 1;
-		  shift_reg <= DIN;
-	       end
+	     //else if (state[IDLE] && PERFORM_READ)
+	     //  begin
+		 // DATA_OUT <= 1;
+		 // shift_reg <= DIN;
+	     //  end
 	     else if (state[LOAD_FIRST_BIT] || state[CLOCK_LOW])
 	       begin
 		  DATA_OUT <= shift_reg[7];
@@ -179,7 +175,7 @@ module write_SPI
 	  state <= next;
      end
 
-   always @ ( /*AUTOSENSE*/START or bit_count or state)
+   always @ (START or bit_count or state)
      begin
 	next = 5'h00;
 
@@ -193,10 +189,6 @@ module write_SPI
 
 	if (state[LOAD_FIRST_BIT])
 	  next[CLOCK_HI] = 1'b1;
-	  //next[LOAD_FIRST_BIT_DELAY] = 1'b1;
-
-	if (state[LOAD_FIRST_BIT_DELAY])
-	  next[CLOCK_HI] = 1'b1;
 
 	if (state[CLOCK_HI])
 	  begin
@@ -204,20 +196,12 @@ module write_SPI
 	       next[WRITE_DONE] = 1'b1;
 	     else
 	       next[CLOCK_LOW] = 1'b1;
-	       //next[CLOCK_HI_DELAY] = 1'b1;
 	  end
-
-	if (state[CLOCK_HI_DELAY])
-	  next[CLOCK_LOW] = 1'b1;
 
 	if (state[CLOCK_LOW])
 	  next[CLOCK_HI] = 1'b1;
-	  //next[CLOCK_LO_DELAY] = 1'b1;
 
-	if (state[CLOCK_LO_DELAY])
-	  next[CLOCK_HI] = 1'b1;
-
-	if (state[WRITE_DONE])
+	  if (state[WRITE_DONE])
 	  next[IDLE] = 1'b1;	
 
 `ifdef SIM
@@ -231,12 +215,6 @@ module write_SPI
 	  state_name = "CLOCK_LOW";
 	else if (state == (1 << WRITE_DONE))
 	  state_name = "WRITE_DONE";	
-	else if (state == (1 << CLOCK_HI_DELAY))
-	  state_name = "CLOCK_HI_DELAY";	
-	else if (state == (1 << CLOCK_LO_DELAY))
-	  state_name = "CLOCK_LO_DELAY";	
-	else if (state == (1 << LOAD_FIRST_BIT_DELAY))
-	  state_name = "LOAD_FIRST_BIT_DELAY";	
 `endif
      end // always @ (...
 

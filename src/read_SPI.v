@@ -22,25 +22,22 @@ module read_SPI
 
    DOUT,
    DATA_IN,
-   SCLK,
+   SCLK//,
 
-   PERFORM_READ
+   //PERFORM_READ
 
    );
 
    //----------------------------------------------
    // Parameter Declarations
    //----------------------------------------------
-   parameter IDLE			= 0,
-	     FIRST_HI			= 1,
-	     FIRST_LOW			= 2,
-	     CLOCK_HI			= 3,
-	     CLOCK_LOW			= 4,
-	     READ_DONE			= 5,
-		WAIT_FOR_DATA_IN_LO = 6,
-		CLOCK_HI_DELAY		= 7,
-		CLOCK_LO_DELAY		= 8,
-		READ_DONE_DELAY	= 9 ;
+   parameter IDLE			    = 0,
+	     CLOCK_HI			    = 1,
+	     CLOCK_LOW			    = 2,
+	     READ_DONE			    = 3,
+		 WAIT_FOR_DATA_IN_LO    = 4,
+		 CLOCK_HI_DELAY		    = 5,
+		 CLOCK_LO_DELAY		    = 6;
    
    //--------------------------------------------------
    // IO Port Declarations
@@ -54,7 +51,7 @@ module read_SPI
    output      DONE;
    output      SCLK;
 
-   output		PERFORM_READ;
+   //output		PERFORM_READ;
 
    
    //------------------------------------------------
@@ -65,8 +62,8 @@ module read_SPI
    reg 	       SCLK;
    reg [7:0]   DOUT;
    
-   reg [9:0]   state, next;
-   reg		PERFORM_READ;
+   reg [6:0]   state, next;
+   //reg		PERFORM_READ;
    
 
 `ifdef SIM
@@ -78,7 +75,7 @@ module read_SPI
    // This will inform the write_SPI_fsm.v to assert
    // DATA_OUT signal to a high.
    //------------------------------------------------
-   always @(posedge CLK or negedge RST_N)
+ /*  always @(posedge CLK or negedge RST_N)
      begin
 	if (!RST_N)
 	  PERFORM_READ <= 0;
@@ -90,7 +87,7 @@ module read_SPI
 	       PERFORM_READ <= 1;
 	  end
      end // always @ (posedge CLK or negedge RST_N)
-
+*/
    //------------------------------------------------
    // Create a DONE Signal when the byte has been transmitted
    //------------------------------------------------
@@ -132,11 +129,10 @@ module read_SPI
 	  SCLK <= 0;
 	else
 	  begin
-	     if (state[CLOCK_HI] || state[CLOCK_HI_DELAY] || 
-			state[READ_DONE_DELAY])
+	     if (state[CLOCK_HI] | state[CLOCK_HI_DELAY] | state[READ_DONE]) 
 	       SCLK <= 1;
 	       //SCLK <= 0;
-	     else if (state[CLOCK_LOW] || state[CLOCK_LO_DELAY] ) 
+	     else if (state[CLOCK_LOW] | state[CLOCK_LO_DELAY] ) 
 	       SCLK <= 0;
 	     else
 	       SCLK <= 0;
@@ -153,7 +149,7 @@ module read_SPI
 	  DOUT <= 0;
 	else
 	  begin
-	     if (state[CLOCK_LOW] || state[READ_DONE])
+	     if (state[CLOCK_LOW] | state[READ_DONE])
 	       begin
 		  DOUT[0] <= DATA_IN;
 		  DOUT[7:1] <= DOUT[6:0];
@@ -172,7 +168,7 @@ module read_SPI
      begin
 	if (!RST_N)
 	  begin
-	     state <= 7'h00;
+	     state <= 6'h00;
 	     state[IDLE] <= 1'b1;
 	  end
 	else
@@ -181,26 +177,20 @@ module read_SPI
 
    always @ ( /*AUTOSENSE*/START or bit_count or DATA_IN or state)
      begin
-	next = 7'h00;
+	next = 6'h00;
 
 	if (state[IDLE])
 	  begin
 	     if (START)
-	       next[FIRST_HI] = 1'b1;
+	       next[CLOCK_HI] = 1'b1;
 	     else
 	       next[IDLE] = 1'b1;
 	  end
 
-	if (state[FIRST_HI])
-	  next[FIRST_LOW] = 1'b1;
-
-	if (state[FIRST_LOW])
-	  next[CLOCK_HI] = 1'b1;	
-
 	if (state[CLOCK_HI])
 	  begin
 	     if (bit_count == 7)
-	       next[READ_DONE_DELAY] = 1'b1;
+	       next[READ_DONE] = 1'b1;
 	     else
 	       next[CLOCK_LOW] = 1'b1;
 	  end
@@ -209,14 +199,10 @@ module read_SPI
 	  next[CLOCK_LOW] = 1'b1;
 
 	if (state[CLOCK_LOW])
-	  //next[CLOCK_LO_DELAY] = 1'b1;
 	  next[CLOCK_HI] = 1'b1;
 
 	if (state[CLOCK_LO_DELAY])
 	  next[CLOCK_HI] = 1'b1;
-
-	if (state[READ_DONE_DELAY])
-	  next[READ_DONE] = 1'b1;	
 
 	if (state[READ_DONE])
 	  next[IDLE] = 1'b1;	
@@ -224,10 +210,6 @@ module read_SPI
 `ifdef SIM
 	if (state == (1 << IDLE))
 	  state_name = "IDLE";
-	else if (state == (1 << FIRST_HI))
-	  state_name = "FIRST_HI";
-	else if (state == (1 << FIRST_LOW))
-	  state_name = "FIRST_LOW";
 	else if (state == (1 << CLOCK_HI))
 	  state_name = "CLOCK_HI";
 	else if (state == (1 << CLOCK_LOW))
@@ -240,8 +222,6 @@ module read_SPI
 	  state_name = "CLOCK_LO_DELAY";
 	else if (state == (1 << CLOCK_HI_DELAY))
 	  state_name = "CLOCK_HI_DELAY";	
-	else if (state == (1 << READ_DONE_DELAY))
-	  state_name = "READ_DONE_DELAY";	
 `endif
      end // always @ (...
 
